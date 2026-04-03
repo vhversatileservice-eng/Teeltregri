@@ -1978,12 +1978,31 @@ function initFirebase() {
   firestoreDb   = firebase.firestore();
   firebaseAuth  = firebase.auth();
 
+  var vorigeUid = localStorage.getItem('vhoof_uid');
+
   firebaseAuth.onAuthStateChanged(function(user) {
     currentUser = user;
     if (user) {
+      // Als andere gebruiker inlogt, wis lokale data
+      if (vorigeUid && vorigeUid !== user.uid) {
+        localStorage.removeItem('vhoof');
+        db = {
+          percelen: [],
+          producten: [
+            {id:'p1',naam:'Kalksalpeter 27%',type:'Kunstmest',eenheid:'kg',prijs:0.42,ctgb:null},
+            {id:'p2',naam:'KAS 27% N',type:'Kunstmest',eenheid:'kg',prijs:0.38,ctgb:null},
+            {id:'p3',naam:'Roundup 360',type:'Herbicide',eenheid:'L',prijs:4.20,ctgb:null},
+          ],
+          actietypen: JSON.parse(JSON.stringify(DEF_AT)),
+          gewassen: DEF_GEW.slice()
+        };
+      }
+      localStorage.setItem('vhoof_uid', user.uid);
+      vorigeUid = user.uid;
       showApp(user);
       laadVanFirebase();
     } else {
+      localStorage.removeItem('vhoof_uid');
       showLogin();
     }
   });
